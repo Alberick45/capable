@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: cap-able-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: OPENAI_API_KEY
+        sync: false
