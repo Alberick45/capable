@@ -4,6 +4,7 @@ import { fetchRemoteOK } from './remoteok.js';
 import { fetchArbeitnow } from './arbeitnow.js';
 import { fetchRemotive } from './remotive.js';
 import { fetchJobspresso } from './jobspresso.js';
+import { fetchMicroGigs } from './microgigs.js';
 
 export const platformRegistry: Record<string, PlatformHandler> = {
   weworkremotely: {
@@ -35,5 +36,11 @@ export const platformRegistry: Record<string, PlatformHandler> = {
     type: 'api',
     url: 'https://jobspresso.co/feed/',
     fetchJobs: fetchJobspresso,
+  },
+  microgigs: {
+    name: 'microgigs',
+    type: 'api',
+    url: 'https://example.com/microgigs',
+    fetchJobs: fetchMicroGigs,
   },
 };

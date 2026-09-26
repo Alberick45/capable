@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Job Matcher Test Bench | Aggregator Service</title>
+  <title>Job Matcher &amp; Accessibility Test Bench</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -25,11 +25,7 @@
       --font-mono: 'JetBrains Mono', monospace;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg-gradient);
@@ -40,15 +36,9 @@
       line-height: 1.5;
     }
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1200px; margin: 0 auto; }
 
-    header {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+    header { margin-bottom: 2rem; text-align: center; }
 
     header h1 {
       font-size: 2.25rem;
@@ -59,16 +49,14 @@
       margin-bottom: 0.5rem;
     }
 
-    header p {
-      color: var(--text-muted);
-      font-size: 1rem;
-    }
+    header p { color: var(--text-muted); font-size: 1rem; }
 
     .badge-bar {
       display: flex;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
       margin-top: 0.75rem;
+      flex-wrap: wrap;
     }
 
     .pill {
@@ -76,21 +64,19 @@
       background: rgba(99, 102, 241, 0.15);
       color: #a5b4fc;
       border: 1px solid rgba(99, 102, 241, 0.3);
-      padding: 0.2rem 0.6rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 9999px;
       font-family: var(--font-mono);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 440px 1fr;
       gap: 1.5rem;
     }
 
-    @media (max-width: 850px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 950px) {
+      .grid { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -102,13 +88,11 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
 
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
+    .form-group { margin-bottom: 1.15rem; }
 
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: var(--text-muted);
       margin-bottom: 0.4rem;
@@ -116,22 +100,28 @@
       letter-spacing: 0.05em;
     }
 
-    input[type="text"], select {
+    input[type="text"], input[type="email"], input[type="url"], input[type="number"], select, textarea {
       width: 100%;
-      padding: 0.75rem 1rem;
+      padding: 0.65rem 0.85rem;
       background: rgba(17, 24, 39, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 10px;
       color: var(--text-main);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-family: var(--font-sans);
       transition: all 0.2s ease;
     }
 
-    input[type="text"]:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--accent-primary);
       box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
     }
 
     .exp-row {
@@ -140,19 +130,8 @@
       margin-bottom: 0.5rem;
     }
 
-    .exp-row input[type="text"] {
-      flex: 1;
-    }
-
-    .exp-row input[type="number"] {
-      width: 80px;
-      padding: 0.75rem 0.5rem;
-      background: rgba(17, 24, 39, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      color: var(--text-main);
-      font-size: 0.95rem;
-    }
+    .exp-row input[type="text"] { flex: 1; }
+    .exp-row input[type="number"] { width: 80px; }
 
     .btn-secondary {
       background: rgba(255, 255, 255, 0.05);
@@ -171,6 +150,22 @@
       color: var(--text-main);
     }
 
+    .btn-parse {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .btn-parse:hover { background: rgba(16, 185, 129, 0.3); color: #fff; }
+
     .btn-submit {
       width: 100%;
       background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
@@ -183,6 +178,7 @@
       cursor: pointer;
       box-shadow: 0 4px 15px var(--accent-glow);
       transition: all 0.2s ease;
+      margin-top: 0.5rem;
     }
 
     .btn-submit:hover {
@@ -195,16 +191,21 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
-    .results-count {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
+    .results-count { font-size: 0.9rem; color: var(--text-muted); }
+    .results-count strong { color: var(--text-main); }
 
-    .results-count strong {
-      color: var(--text-main);
+    .cache-status {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
     }
+    .cache-status.cached { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .cache-status.fresh { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
 
     .toggle-json {
       background: transparent;
@@ -217,16 +218,7 @@
       font-family: var(--font-mono);
     }
 
-    .toggle-json:hover {
-      color: var(--text-main);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .job-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+    .job-list { display: flex; flex-direction: column; gap: 1.25rem; }
 
     .job-card {
       background: rgba(255, 255, 255, 0.02);
@@ -234,13 +226,11 @@
       border-radius: 12px;
       padding: 1.25rem;
       transition: all 0.2s ease;
-      position: relative;
     }
 
     .job-card:hover {
       background: var(--card-hover);
       border-color: rgba(99, 102, 241, 0.4);
-      transform: translateY(-2px);
     }
 
     .job-top {
@@ -258,9 +248,7 @@
       text-decoration: none;
     }
 
-    .job-title:hover {
-      color: var(--accent-primary);
-    }
+    .job-title:hover { color: var(--accent-primary); }
 
     .score-badge {
       background: rgba(16, 185, 129, 0.15);
@@ -271,38 +259,42 @@
       padding: 0.25rem 0.6rem;
       border-radius: 8px;
       font-family: var(--font-mono);
-      white-space: nowrap;
-    }
-
-    .score-badge.medium {
-      background: rgba(245, 158, 11, 0.15);
-      border-color: rgba(245, 158, 11, 0.4);
-      color: var(--warning);
     }
 
     .job-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
+      gap: 0.5rem 1rem;
       font-size: 0.85rem;
       color: var(--text-muted);
       margin-bottom: 0.75rem;
     }
 
-    .job-meta-item {
+    .tags-container {
       display: flex;
-      align-items: center;
-      gap: 0.3rem;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
     }
 
-    .meta-tag {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
+    .job-tag {
+      font-size: 0.72rem;
+      background: rgba(99, 102, 241, 0.1);
+      color: #c7d2fe;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      padding: 0.1rem 0.5rem;
+      border-radius: 6px;
     }
 
-    .job-desc {
+    .access-tag {
+      font-size: 0.72rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .access-tag.accessible { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .job-desc-snippet {
       font-size: 0.88rem;
       color: #d1d5db;
       display: -webkit-box;
@@ -312,35 +304,88 @@
       margin-bottom: 0.75rem;
     }
 
-    .reasons {
+    .card-actions {
       display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      align-items: center;
       flex-wrap: wrap;
-      gap: 0.4rem;
     }
 
-    .reason-pill {
-      font-size: 0.72rem;
-      background: rgba(255, 255, 255, 0.04);
-      color: #9ca3af;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .apply-btn {
-      display: inline-block;
-      margin-top: 0.75rem;
+    .btn-desc-modal {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e5e7eb;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
       font-size: 0.82rem;
       font-weight: 600;
-      color: #a5b4fc;
-      text-decoration: none;
-      transition: color 0.2s;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .apply-btn:hover {
-      color: #fff;
-      text-decoration: underline;
+    .btn-desc-modal:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.3); }
+
+    .btn-ai {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c084fc;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }
+
+    .btn-ai:hover { background: rgba(139, 92, 246, 0.3); color: #fff; }
+
+    .apply-btn { font-size: 0.85rem; font-weight: 600; color: #a5b4fc; text-decoration: none; }
+    .apply-btn:hover { color: #fff; text-decoration: underline; }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: #111827;
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 1.75rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      padding: 0 0.5rem;
+    }
+    .modal-close:hover { color: #fff; }
 
     pre#jsonOutput {
       background: #090d16;
@@ -357,74 +402,118 @@
 
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border: 3px solid rgba(255,255,255,.3);
       border-radius: 50%;
       border-top-color: #fff;
       animation: spin 0.8s ease-in-out infinite;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--text-dim);
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-dim); }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Job Matcher Test Bench</h1>
-      <p>Node.js + TypeScript Express Aggregator Service</p>
+      <h1>Job Matcher &amp; Accessibility Bench</h1>
+      <p>Node.js + TypeScript Service • 6 Active Platforms • MicroGigs &amp; Resume Parsing</p>
       <div class="badge-bar">
-        <span class="pill">POST /api/search-jobs</span>
-        <span class="pill">Render Ready</span>
-        <span class="pill">RSS &amp; API Handlers</span>
+        <span class="pill" id="schedulePill">⏰ Refresh Schedule: Every 24 Hours</span>
+        <span class="pill">♿ Disability Compatibility Engine</span>
+        <span class="pill">📄 Resume Parser</span>
+        <span class="pill">⚡ 1-Click Auto-Fill</span>
       </div>
     </header>
 
     <div class="grid">
-      <!-- Search Form -->
+      <!-- Search & Config Form -->
       <div class="card">
         <form id="searchForm">
-          <div class="form-group">
-            <label for="skills">Skills (comma separated)</label>
-            <input type="text" id="skills" value="flutter, dart, firebase, mobile" placeholder="e.g. react, node.js, typescript" required />
+          <!-- Resume Parse Box -->
+          <div class="form-group" style="background:rgba(255,255,255,0.02);padding:0.75rem;border-radius:10px;border:1px solid rgba(255,255,255,0.08)">
+            <label style="color:#a5b4fc">📄 Paste Resume Text (Auto-Fill Profile)</label>
+            <textarea id="resumeInput" rows="2" placeholder="Paste resume plain text here to extract skills, experience, and links..."></textarea>
+            <button type="button" class="btn-parse" id="parseResumeBtn">⚡ Extract &amp; Auto-Fill Profile</button>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label for="candidateName">Candidate Name</label>
+              <input type="text" id="candidateName" value="Alex Techie" placeholder="Your Name" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" value="alex@example.com" placeholder="Email" />
+            </div>
           </div>
 
           <div class="form-group">
-            <label>Work Preference</label>
-            <select id="workPreference">
-              <option value="remote" selected>Remote</option>
-              <option value="on-site">On-site</option>
-              <option value="hybrid">Hybrid</option>
-              <option value="any">Any</option>
-            </select>
+            <label for="skills">Skills / Tags (comma separated)</label>
+            <input type="text" id="skills" value="c, python, embedded, robotics" placeholder="e.g. c, python, embedded" required />
+          </div>
+
+          <!-- Disabilities & Accessibility Needs -->
+          <div class="form-group">
+            <label for="disabilities" style="color:#f59e0b">♿ Disability &amp; Accessibility Needs</label>
+            <input type="text" id="disabilities" value="wheelchair user, mobility impairment" placeholder="e.g. wheelchair user, visually impaired, deaf" />
+            <small style="color:var(--text-dim);font-size:0.75rem;margin-top:0.2rem;display:block">
+              ℹ Automatically filters out conflicting physical labor / heavy lifting jobs.
+            </small>
+          </div>
+
+          <!-- Social Links -->
+          <div class="form-group">
+            <label>🌐 Social &amp; Portfolio Links</label>
+            <input type="url" id="github" value="https://github.com/alextechie" placeholder="GitHub URL" style="margin-bottom:0.4rem" />
+            <input type="url" id="linkedin" value="https://linkedin.com/in/alextechie" placeholder="LinkedIn URL" style="margin-bottom:0.4rem" />
+            <input type="url" id="portfolio" value="https://alextechie.dev" placeholder="Portfolio Website URL" />
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label for="workPreference">Work Preference</label>
+              <select id="workPreference">
+                <option value="any" selected>Any (Remote, On-site, Hybrid)</option>
+                <option value="remote">Remote Only</option>
+                <option value="on-site">On-site Only</option>
+                <option value="hybrid">Hybrid Only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="refreshInterval">Refresh Schedule</label>
+              <select id="refreshInterval">
+                <option value="24" selected>Every 24 Hours</option>
+                <option value="12">Every 12 Hours</option>
+                <option value="6">Every 6 Hours</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="locations">Locations (comma separated)</label>
-            <input type="text" id="locations" value="Accra, Ghana, Remote" placeholder="e.g. Accra, London, Remote" />
+            <label for="locations">Target Locations</label>
+            <input type="text" id="locations" value="London, Berlin, Remote" placeholder="e.g. Accra, London, Remote" />
           </div>
 
           <div class="form-group">
             <label>Experience (Optional)</label>
             <div id="expContainer">
               <div class="exp-row">
-                <input type="text" class="exp-title" value="Mobile Developer" placeholder="Title" />
+                <input type="text" class="exp-title" value="Robotics Engineer" placeholder="Title" />
                 <input type="number" class="exp-years" value="2" placeholder="Years" min="0" />
               </div>
             </div>
             <button type="button" class="btn-secondary" id="addExpBtn">+ Add Experience</button>
           </div>
 
+          <div class="form-group">
+            <label for="bio">Bio / Pitch Summary</label>
+            <textarea id="bio" rows="2" placeholder="Summary for AI application generator...">Versatile engineer focused on firmware, sensors, and robotics.</textarea>
+          </div>
+
           <button type="submit" class="btn-submit" id="submitBtn">
-            <span>Search &amp; Score Jobs</span>
+            <span>Search &amp; Rank Matches</span>
           </button>
         </form>
       </div>
@@ -432,7 +521,10 @@
       <!-- Results View -->
       <div>
         <div class="results-header">
-          <div class="results-count" id="resultsCount">Ready to search</div>
+          <div>
+            <span class="results-count" id="resultsCount">Ready to search</span>
+            <span id="cacheBadge"></span>
+          </div>
           <button class="toggle-json" id="toggleJsonBtn">Show Raw JSON</button>
         </div>
 
@@ -440,9 +532,43 @@
 
         <div class="job-list" id="jobList">
           <div class="empty-state">
-            Fill out candidate profile and click "Search &amp; Score Jobs" to view live matches.
+            Fill out candidate profile and click "Search &amp; Rank Matches" to view live listings.
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 1: Full Job Description Modal -->
+  <div class="modal-overlay" id="descModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h2 id="descModalTitle" style="color:#fff;font-size:1.3rem;margin-bottom:0.25rem">Job Title</h2>
+          <div id="descModalMeta" style="color:var(--text-muted);font-size:0.85rem">Company • Location</div>
+        </div>
+        <button class="modal-close" id="closeDescModalBtn">&times;</button>
+      </div>
+      <div id="descModalTags" class="tags-container" style="margin-bottom:1rem"></div>
+      <div id="descModalBody" style="color:#d1d5db;font-size:0.92rem;line-height:1.6;white-space:pre-wrap;margin-bottom:1.5rem"></div>
+      <div style="border-top:1px solid var(--card-border);padding-top:1rem;display:flex;justify-content:space-between;align-items:center">
+        <a id="descModalApplyLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-submit" style="display:inline-block;width:auto;padding:0.6rem 1.25rem;text-decoration:none">
+          Apply Now &rarr;
+        </a>
+        <button class="btn-secondary" style="width:auto" id="descModalCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: AI Application Draft & 1-Click Auto-Fill Modal -->
+  <div class="modal-overlay" id="aiModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalJobTitle">AI Application &amp; 1-Click Auto-Fill</h3>
+        <button class="modal-close" id="closeAiModalBtn">&times;</button>
+      </div>
+      <div id="modalBody">
+        <div class="spinner"></div> Evaluating profile &amp; drafting cover letter...
       </div>
     </div>
   </div>
@@ -451,27 +577,80 @@
     const searchForm = document.getElementById('searchForm');
     const expContainer = document.getElementById('expContainer');
     const addExpBtn = document.getElementById('addExpBtn');
+    const parseResumeBtn = document.getElementById('parseResumeBtn');
+    const resumeInput = document.getElementById('resumeInput');
     const submitBtn = document.getElementById('submitBtn');
     const jobList = document.getElementById('jobList');
     const jsonOutput = document.getElementById('jsonOutput');
     const resultsCount = document.getElementById('resultsCount');
+    const cacheBadge = document.getElementById('cacheBadge');
     const toggleJsonBtn = document.getElementById('toggleJsonBtn');
 
-    let showJson = false;
-    let lastResponse = null;
+    // Description Modal elements
+    const descModal = document.getElementById('descModal');
+    const closeDescModalBtn = document.getElementById('closeDescModalBtn');
+    const descModalCloseBtn = document.getElementById('descModalCloseBtn');
+    const descModalTitle = document.getElementById('descModalTitle');
+    const descModalMeta = document.getElementById('descModalMeta');
+    const descModalTags = document.getElementById('descModalTags');
+    const descModalBody = document.getElementById('descModalBody');
+    const descModalApplyLink = document.getElementById('descModalApplyLink');
 
-    // Add experience row
+    // AI Modal elements
+    const aiModal = document.getElementById('aiModal');
+    const closeAiModalBtn = document.getElementById('closeAiModalBtn');
+    const modalJobTitle = document.getElementById('modalJobTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    let showJson = false;
+    let currentJobs = [];
+
     addExpBtn.addEventListener('click', () => {
       const row = document.createElement('div');
       row.className = 'exp-row';
       row.innerHTML = `
-        <input type="text" class="exp-title" placeholder="Title (e.g. Frontend Dev)" />
+        <input type="text" class="exp-title" placeholder="Title (e.g. Firmware Dev)" />
         <input type="number" class="exp-years" placeholder="Years" min="0" value="1" />
       `;
       expContainer.appendChild(row);
     });
 
-    // Toggle JSON View
+    // Parse Resume Handler
+    parseResumeBtn.addEventListener('click', async () => {
+      const text = resumeInput.value;
+      if (!text.trim()) { alert('Please paste your resume plain text into the box first.'); return; }
+
+      parseResumeBtn.disabled = true;
+      parseResumeBtn.innerHTML = '<span class="spinner"></span> Parsing Resume...';
+
+      try {
+        const res = await fetch('/api/parse-resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resumeText: text }),
+        });
+
+        const data = await res.json();
+        if (data.extractedSkills && data.extractedSkills.length > 0) {
+          document.getElementById('skills').value = data.extractedSkills.join(', ');
+        }
+        if (data.extractedLinks) {
+          if (data.extractedLinks.github) document.getElementById('github').value = data.extractedLinks.github;
+          if (data.extractedLinks.linkedin) document.getElementById('linkedin').value = data.extractedLinks.linkedin;
+          if (data.extractedLinks.portfolio) document.getElementById('portfolio').value = data.extractedLinks.portfolio;
+        }
+        if (data.extractedBioSnippet) {
+          document.getElementById('bio').value = data.extractedBioSnippet;
+        }
+        alert('✅ Resume parsed successfully! Profile skills and social links auto-filled.');
+      } catch (err) {
+        alert('Failed to parse resume: ' + err.message);
+      } finally {
+        parseResumeBtn.disabled = false;
+        parseResumeBtn.innerHTML = '⚡ Extract &amp; Auto-Fill Profile';
+      }
+    });
+
     toggleJsonBtn.addEventListener('click', () => {
       showJson = !showJson;
       toggleJsonBtn.textContent = showJson ? 'Show Cards View' : 'Show Raw JSON';
@@ -479,42 +658,37 @@
       jobList.style.display = showJson ? 'none' : 'flex';
     });
 
+    closeDescModalBtn.addEventListener('click', () => descModal.style.display = 'none');
+    descModalCloseBtn.addEventListener('click', () => descModal.style.display = 'none');
+    closeAiModalBtn.addEventListener('click', () => aiModal.style.display = 'none');
+
     searchForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const skills = document.getElementById('skills').value
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-
-      const locations = document.getElementById('locations').value
-        .split(',')
-        .map(l => l.trim())
-        .filter(Boolean);
-
+      const skills = document.getElementById('skills').value.split(',').map(s => s.trim()).filter(Boolean);
+      const locations = document.getElementById('locations').value.split(',').map(l => l.trim()).filter(Boolean);
+      const disabilities = document.getElementById('disabilities').value.split(',').map(d => d.trim()).filter(Boolean);
       const workPreference = document.getElementById('workPreference').value;
+      const name = document.getElementById('candidateName').value;
+      const email = document.getElementById('email').value;
+      const github = document.getElementById('github').value;
+      const linkedin = document.getElementById('linkedin').value;
+      const portfolio = document.getElementById('portfolio').value;
+      const bio = document.getElementById('bio').value;
 
       const expRows = expContainer.querySelectorAll('.exp-row');
       const experience = [];
       expRows.forEach(row => {
         const title = row.querySelector('.exp-title').value.trim();
         const years = parseInt(row.querySelector('.exp-years').value, 10) || 0;
-        if (title) {
-          experience.push({ title, years });
-        }
+        if (title) experience.push({ title, years });
       });
 
-      const payload = {
-        skills,
-        experience,
-        locations,
-        workPreference,
-      };
+      const payload = { name, email, skills, experience, locations, workPreference, disabilities, github, linkedin, portfolio, bio };
 
-      // UI Loading State
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner"></span> Searching Platforms...';
-      resultsCount.innerHTML = 'Fetching from WeWorkRemotely &amp; RemoteOK...';
+      submitBtn.innerHTML = '<span class="spinner"></span> Querying Platforms...';
+      resultsCount.innerHTML = 'Fetching &amp; scoring listings...';
 
       try {
         const res = await fetch('/api/search-jobs', {
@@ -523,68 +697,152 @@
           body: JSON.stringify(payload),
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
         const data = await res.json();
-        lastResponse = data;
+        currentJobs = data.jobs || [];
         jsonOutput.textContent = JSON.stringify(data, null, 2);
-
         renderJobs(data);
       } catch (err) {
-        console.error(err);
         jobList.innerHTML = `<div class="empty-state" style="color:#ef4444">Error fetching jobs: ${err.message}</div>`;
         resultsCount.textContent = 'Error occurred';
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>Search &amp; Score Jobs</span>';
+        submitBtn.innerHTML = '<span>Search &amp; Rank Matches</span>';
       }
     });
 
     function renderJobs(data) {
-      const { count, totalFetched, jobs } = data;
-      resultsCount.innerHTML = `Found <strong>${count}</strong> matches (from ${totalFetched} raw listings)`;
+      const { count, totalFetched, fromCache, cacheAgeSeconds, jobs } = data;
+      resultsCount.innerHTML = `Found <strong>${count}</strong> matches (from ${totalFetched} raw listings across 6 platforms)`;
+
+      if (fromCache) {
+        cacheBadge.className = 'cache-status cached';
+        cacheBadge.textContent = `⚡ Served from Cache (${cacheAgeSeconds}s old)`;
+      } else {
+        cacheBadge.className = 'cache-status fresh';
+        cacheBadge.textContent = `🌐 Fresh Platform Fetch`;
+      }
 
       if (!jobs || jobs.length === 0) {
-        jobList.innerHTML = '<div class="empty-state">No matching jobs found for the selected skills/locations.</div>';
+        jobList.innerHTML = '<div class="empty-state">No matching jobs found. Try adjusting tags, location, or accessibility filters.</div>';
         return;
       }
 
-      jobList.innerHTML = jobs.map(job => {
-        const scoreClass = job.score >= 0.7 ? 'score-badge' : 'score-badge medium';
+      jobList.innerHTML = jobs.map((job, idx) => {
         const scorePercent = Math.round(job.score * 100);
-
-        const reasonsHtml = (job.matchReasons || [])
-          .map(r => `<span class="reason-pill">${escapeHtml(r)}</span>`)
+        const tagsHtml = (job.tags || []).slice(0, 8)
+          .map(t => `<span class="job-tag">${escapeHtml(t)}</span>`)
           .join('');
+
+        const isAccessible = job.accessibilityStatus === 'fully_accessible';
+        const accessBadge = `<span class="access-tag accessible">${isAccessible ? '♿ Fully Accessible' : '♿ Needs Review'}</span>`;
 
         return `
           <div class="job-card">
             <div class="job-top">
-              <a href="${escapeHtml(job.url)}" target="_blank" rel="noopener noreferrer" class="job-title">
+              <a href="javascript:void(0)" onclick="openDescModal(${idx})" class="job-title">
                 ${escapeHtml(job.title)}
               </a>
-              <div class="${scoreClass}">Match: ${scorePercent}%</div>
+              <div class="score-badge">Match: ${scorePercent}%</div>
             </div>
             
             <div class="job-meta">
-              <span class="job-meta-item">🏢 ${escapeHtml(job.company)}</span>
-              <span class="job-meta-item">📍 ${escapeHtml(job.location)}</span>
-              <span class="meta-tag">Source: ${escapeHtml(job.source)}</span>
-              ${job.remote ? '<span class="meta-tag" style="color:#10b981;background:rgba(16,185,129,0.1)">Remote</span>' : ''}
+              <span>🏢 ${escapeHtml(job.company)}</span>
+              <span>📍 ${escapeHtml(job.location)}</span>
+              <span>Source: ${escapeHtml(job.source)}</span>
+              ${job.remote ? '<span style="color:#10b981">Remote</span>' : '<span style="color:#f59e0b">On-site / Hybrid</span>'}
+              ${accessBadge}
             </div>
 
-            <div class="job-desc">${escapeHtml(job.description)}</div>
+            ${tagsHtml ? `<div class="tags-container">${tagsHtml}</div>` : ''}
 
-            <div class="reasons">${reasonsHtml}</div>
+            <div class="job-desc-snippet">${escapeHtml(job.description)}</div>
 
-            <a href="${escapeHtml(job.url)}" target="_blank" rel="noopener noreferrer" class="apply-btn">
-              View &amp; Apply &rarr;
-            </a>
+            <div class="card-actions">
+              <button class="btn-desc-modal" onclick="openDescModal(${idx})">📄 Full Description</button>
+              <button class="btn-ai" onclick="openAIModal(${idx})">🤖 AI Draft &amp; Auto-fill</button>
+              <a href="${escapeHtml(job.url)}" target="_blank" rel="noopener noreferrer" class="apply-btn">
+                Apply on ${escapeHtml(job.source)} &rarr;
+              </a>
+            </div>
           </div>
         `;
       }).join('');
+    }
+
+    function openDescModal(idx) {
+      const job = currentJobs[idx];
+      if (!job) return;
+
+      descModalTitle.textContent = job.title;
+      descModalMeta.textContent = `${job.company} • ${job.location} • Source: ${job.source} ${job.remote ? '(Remote)' : '(On-site/Hybrid)'}`;
+      descModalTags.innerHTML = (job.tags || []).map(t => `<span class="job-tag" style="font-size:0.78rem;padding:0.2rem 0.6rem">${escapeHtml(t)}</span>`).join('');
+      descModalBody.textContent = job.description || 'No detailed description provided.';
+      descModalApplyLink.href = job.url;
+      descModal.style.display = 'flex';
+    }
+
+    async function openAIModal(idx) {
+      const job = currentJobs[idx];
+      if (!job) return;
+
+      modalJobTitle.textContent = `AI Application & Auto-Fill • ${job.title}`;
+      modalBody.innerHTML = '<div style="text-align:center;padding:2rem"><span class="spinner"></span><p style="margin-top:1rem">Evaluating candidate profile, links &amp; accessibility...</p></div>';
+      aiModal.style.display = 'flex';
+
+      const candidate = {
+        name: document.getElementById('candidateName').value,
+        email: document.getElementById('email').value,
+        skills: document.getElementById('skills').value.split(',').map(s=>s.trim()).filter(Boolean),
+        disabilities: document.getElementById('disabilities').value.split(',').map(d=>d.trim()).filter(Boolean),
+        github: document.getElementById('github').value,
+        linkedin: document.getElementById('linkedin').value,
+        portfolio: document.getElementById('portfolio').value,
+        bio: document.getElementById('bio').value,
+      };
+
+      try {
+        const res = await fetch('/api/generate-application', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ job, candidate }),
+        });
+
+        const data = await res.json();
+
+        modalBody.innerHTML = `
+          <div style="margin-bottom:1rem">
+            <div style="display:flex;gap:1rem;align-items:center;margin-bottom:0.75rem;flex-wrap:wrap">
+              <span class="score-badge" style="font-size:1rem">Fit Score: ${data.fitScore}/100</span>
+              <span style="color:#34d399;font-size:0.88rem;background:rgba(16,185,129,0.1);padding:0.2rem 0.6rem;border-radius:6px">♿ ${escapeHtml(data.accessibilityAssessment)}</span>
+            </div>
+            
+            <h4 style="color:#a5b4fc;margin-bottom:0.4rem;font-size:0.9rem">Key Highlights:</h4>
+            <ul style="color:#d1d5db;font-size:0.85rem;margin-left:1.2rem;margin-bottom:1rem">
+              ${(data.keyHighlights || []).map(h => `<li>${escapeHtml(h)}</li>`).join('')}
+            </ul>
+
+            <h4 style="color:#a5b4fc;margin-bottom:0.4rem;font-size:0.9rem">Tailored Cover Letter Pitch (Includes GitHub/LinkedIn/Portfolio):</h4>
+            <textarea id="coverLetterBox" rows="8" readonly style="font-family:var(--font-mono);font-size:0.82rem;line-height:1.6">${escapeHtml(data.coverLetterDraft)}</textarea>
+
+            <div style="margin-top:1rem;display:flex;gap:0.75rem">
+              <button class="btn-submit" style="margin:0" onclick="copyAndApply('${escapeHtml(job.url)}')">
+                ⚡ Copy Details &amp; Open Application Link
+              </button>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        modalBody.innerHTML = `<div style="color:#ef4444">Error drafting application: ${err.message}</div>`;
+      }
+    }
+
+    function copyAndApply(url) {
+      const coverLetter = document.getElementById('coverLetterBox').value;
+      navigator.clipboard.writeText(coverLetter);
+      alert('📋 Application Pitch & Cover Letter copied to your clipboard!\nOpening job application page now...');
+      window.open(url, '_blank');
     }
 
     function escapeHtml(str) {

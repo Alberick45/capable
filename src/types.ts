@@ -9,13 +9,20 @@ export interface CandidateProfile {
   userId?: string;
   name?: string;
   email?: string;
-  dob?: string;       // e.g. "1998-05-15"
-  age?: number;        // e.g. 28
+  phone?: string;
+  dob?: string;
+  age?: number;
   skills: string[];
   experience?: Experience[];
   locations: string[];
   workPreference: WorkPreference;
+  disabilities?: string[];         // e.g. ["mobility impairment", "visually impaired"]
+  accessibilityNeeds?: string[];   // e.g. ["screen reader compatible", "wheelchair accessible office", "remote preference"]
+  github?: string;
+  linkedin?: string;
+  portfolio?: string;
   bio?: string;
+  resumeText?: string;
   limit?: number;
 }
 
@@ -29,12 +36,16 @@ export interface RawJob {
   url: string;
   description: string;
   tags?: string[];
+  category?: 'professional' | 'microgig' | 'freelance';
+  physicalRequirements?: string[];
   source: string;
   publishedAt?: string;
 }
 
 export interface ScoredJob extends RawJob {
   score: number;
+  accessibilityScore?: number;
+  accessibilityStatus?: 'fully_accessible' | 'requires_review' | 'physical_conflict';
   matchReasons?: string[];
 }
 
@@ -67,15 +78,35 @@ export interface AIDraftRequest {
     location?: string;
   };
   candidate: CandidateProfile;
-  apiKey?: string; // Optional OpenAI/Gemini/Anthropic API key
+  apiKey?: string;
 }
 
 export interface AIDraftResponse {
   fitScore: number;
-  fitAssessment: string;
+  accessibilityAssessment: string;
   coverLetterDraft: string;
   keyHighlights: string[];
   recommendedStrategy: string;
+  autofillPayload: {
+    fullName: string;
+    email: string;
+    phone: string;
+    linkedin: string;
+    github: string;
+    portfolio: string;
+    coverLetter: string;
+  };
+}
+
+export interface ResumeParseResult {
+  extractedSkills: string[];
+  estimatedExperienceYears: number;
+  extractedLinks: {
+    github?: string;
+    linkedin?: string;
+    portfolio?: string;
+  };
+  extractedBioSnippet: string;
 }
 
 export type HandlerType = 'playwright' | 'api';

@@ -41,12 +41,14 @@ export async function fetchRemotive(): Promise<RawJob[]> {
         continue;
       }
 
-      const tags = Array.isArray(item.tags) ? item.tags.join(', ') : '';
       const rawDesc = item.description || '';
       const cleanDesc = rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      const fullDesc = tags ? `Tags: ${tags}\n${cleanDesc}` : cleanDesc;
-
       const locationStr = item.candidate_required_location || 'Remote';
+
+      const tagList = Array.isArray(item.tags) ? item.tags : [];
+      if (item.category && !tagList.includes(item.category)) {
+        tagList.push(item.category);
+      }
 
       jobs.push({
         title: item.title,
@@ -54,7 +56,8 @@ export async function fetchRemotive(): Promise<RawJob[]> {
         location: locationStr,
         remote: true,
         url: item.url,
-        description: fullDesc,
+        description: cleanDesc,
+        tags: tagList,
         source: 'remotive',
         publishedAt: item.publication_date,
       });

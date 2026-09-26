@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RawJob } from '../types.js';
+import { cleanHtmlAndEntities } from '../utils/textCleaner.js';
 
 interface RemoteOKItem {
   id?: string;
@@ -40,15 +41,14 @@ export async function fetchRemoteOK(): Promise<RawJob[]> {
         continue;
       }
 
-      const rawDesc = item.description || '';
-      // Clean HTML tags and excess whitespace
-      const cleanDesc = rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const cleanTitle = cleanHtmlAndEntities(item.position);
+      const cleanDesc = cleanHtmlAndEntities(item.description || '');
 
       const jobUrl = item.url || item.apply_url || (item.slug ? `https://remoteok.com/remote-jobs/${item.slug}` : 'https://remoteok.com');
 
       jobs.push({
-        title: item.position,
-        company: item.company,
+        title: cleanTitle,
+        company: cleanHtmlAndEntities(item.company),
         location: item.location || 'Remote',
         remote: true,
         url: jobUrl,

@@ -1,32 +1,42 @@
+import { evaluateAccessibilityMatch } from './accessibilityMatcher.js';
 import { JobSearchQuery, RawJob, ScoredJob } from '../types.js';
+import { cleanHtmlAndEntities } from '../utils/textCleaner.js';
 
-/**
- * Escapes regex special characters in user input string
- */
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/**
- * Checks if a skill token appears as a whole word or distinct term in text
- */
 function containsKeyword(text: string, keyword: string): boolean {
   const cleanKeyword = keyword.trim().toLowerCase();
   if (!cleanKeyword) return false;
-
   const escaped = escapeRegex(cleanKeyword);
-  // Match full word boundary or non-alphanumeric boundary (e.g., node.js, c++, react-native)
   const regex = new RegExp(`(?:^|[^a-zA-Z0-9+#.-])${escaped}(?:$|[^a-zA-Z0-9+#.-])`, 'i');
   return regex.test(text);
 }
 
+function isLocationMatch(jobLocation: string, targetLocations: string[]): boolean {
+  if (targetLocations.length === 0) return true;
+  const jobLocLower = jobLocation.toLowerCase();
+
+  for (const target of targetLocations) {
+    const targetLower = target.trim().toLowerCase();
+    if (!targetLower) continue;
+    if (jobLocLower.includes(targetLower)) return true;
+
+    const tokens = targetLower.split(/[\s,]+/).filter((t) => t.length > 2);
+    for (const token of tokens) {
+      if (token !== 'remote' && jobLocLower.includes(token)) return true;
+    }
+  }
+  return false;
+}
+
 export function scoreAndFilterJobs(jobs: RawJob[], query: JobSearchQuery): ScoredJob[] {
-  const { skills = [], experience = [], locations = [], workPreference = 'any' } = query;
-  
+  const { skills = [], experience = [], locations = [], workPreference = 'any', disabilities = [], accessibilityNeeds = [] } = query;
+
   const cleanSkills = skills.map((s) => s.trim().toLowerCase()).filter(Boolean);
   const cleanLocations = locations.map((l) => l.trim().toLowerCase()).filter(Boolean);
 
-  // Calculate user total/max experience years if provided
   const maxExperienceYears = experience.reduce((max, exp) => Math.max(max, exp.years || 0), 0);
   const hasJuniorProfile = experience.length > 0 && maxExperienceYears < 3;
   const hasSeniorProfile = maxExperienceYears >= 5;
@@ -34,14 +44,49 @@ export function scoreAndFilterJobs(jobs: RawJob[], query: JobSearchQuery): Score
   const scoredJobs: ScoredJob[] = [];
 
   for (const job of jobs) {
-    const titleLower = job.title.toLowerCase();
-    const descLower = job.description.toLowerCase();
-    const locLower = job.location.toLowerCase();
-    const combinedText = `${titleLower} ${descLower}`;
+    const isJobRemote = job.remote || /\b(remote|anywhere|work from home|telecommute)\b/i.test(job.location);
+    const jobLocLower = job.location.toLowerCase();
 
-    const matchReasons: string[] = [];
+    // --- ACCESSIBILITY & DISABILITY MATCHING ---
+    const accessEval = evaluateAccessibilityMatch(job, query);
 
-    // --- 1. SKILL SCORE (Weight: 60%) ---
+    // If there is a strict physical conflict (e.g. wheelchair user vs heavy warehouse labor/climbing), filter out job
+    if (accessEval.status === 'physical_conflict' && (disabilities.length > 0 || accessibilityNeeds.length > 0)) {
+      continue; // Skip job due to physical conflict
+    }
+
+    // --- STRICT WORK PREFERENCE FILTERING ---
+    if (workPreference === 'on-site') {
+      if (isJobRemote) continue;
+    } else if (workPreference === 'remote') {
+      if (!isJobRemote) continue;
+    } else if (workPreference === 'hybrid') {
+      if (!isJobRemote && !jobLocLower.includes('hybrid')) {
+        if (cleanLocations.length > 0 && !isLocationMatch(job.location, cleanLocations)) {
+          continue;
+        }
+      }
+    }
+
+    // --- STRICT LOCATION FILTERING ---
+    if (cleanLocations.length > 0) {
+      const isCandidateAllowingRemote = workPreference === 'remote' || workPreference === 'any' || cleanLocations.some((l) => l.includes('remote'));
+
+      if (!isJobRemote) {
+        if (!isLocationMatch(job.location, cleanLocations)) {
+          continue;
+        }
+      } else if (!isCandidateAllowingRemote) {
+        continue;
+      }
+    }
+
+    // --- SKILL MATCHING ---
+    const cleanDesc = cleanHtmlAndEntities(job.description);
+    const cleanTitle = cleanHtmlAndEntities(job.title);
+    const titleLower = cleanTitle.toLowerCase();
+    const descLower = cleanDesc.toLowerCase();
+
     const matchedSkills: string[] = [];
     const titleMatchedSkills: string[] = [];
 
@@ -52,73 +97,49 @@ export function scoreAndFilterJobs(jobs: RawJob[], query: JobSearchQuery): Score
 
         if (inTitle || inDesc) {
           matchedSkills.push(skill);
-          if (inTitle) {
-            titleMatchedSkills.push(skill);
-          }
+          if (inTitle) titleMatchedSkills.push(skill);
         }
+      }
+
+      if (matchedSkills.length === 0) {
+        continue;
       }
     }
 
-    let skillScore = 0;
+    const matchReasons: string[] = [];
+
+    // --- SKILL SCORE (Weight: 50%) ---
+    let skillScore = 0.5;
     if (cleanSkills.length > 0) {
       const baseRatio = matchedSkills.length / cleanSkills.length;
-      // Bonus if matched skills appear directly in the job title
       const titleBonus = titleMatchedSkills.length > 0 ? 0.2 : 0;
       skillScore = Math.min(1.0, baseRatio + titleBonus);
-
-      if (matchedSkills.length > 0) {
-        matchReasons.push(`Skills matched: ${matchedSkills.join(', ')}`);
-      }
-    } else {
-      // If no skills passed, default skill score is neutral 0.5
-      skillScore = 0.5;
+      matchReasons.push(`Skills matched: ${matchedSkills.join(', ')}`);
     }
 
-    // --- 2. LOCATION & WORK PREFERENCE SCORE (Weight: 30%) ---
-    let locationScore = 0.5; // neutral baseline
-
-    const isJobRemote = job.remote || locLower.includes('remote') || locLower.includes('anywhere') || locLower.includes('work from home');
-
-    if (workPreference === 'remote') {
-      if (isJobRemote) {
-        locationScore = 1.0;
-        matchReasons.push('Remote preference matched');
-      } else {
-        locationScore = 0.1;
-      }
-    } else if (workPreference === 'on-site' || workPreference === 'hybrid') {
-      if (!isJobRemote) {
-        locationScore = 0.8;
-      }
-      // Check user specified locations match
-      const locMatch = cleanLocations.some((loc) => locLower.includes(loc));
-      if (locMatch) {
-        locationScore = 1.0;
-        matchReasons.push('Specified location matched');
-      }
-    } else {
-      // 'any' preference
-      if (isJobRemote) {
-        locationScore = 0.9;
-        matchReasons.push('Remote job available');
-      } else if (cleanLocations.length > 0) {
-        const locMatch = cleanLocations.some((loc) => locLower.includes(loc));
-        if (locMatch) {
-          locationScore = 1.0;
-          matchReasons.push('Location matched');
-        }
-      } else {
-        locationScore = 0.7;
-      }
+    // --- LOCATION SCORE (Weight: 25%) ---
+    let locationScore = 0.7;
+    if (cleanLocations.length > 0 && isLocationMatch(job.location, cleanLocations)) {
+      locationScore = 1.0;
+      matchReasons.push(`Target location matched: ${job.location}`);
+    } else if (isJobRemote && (workPreference === 'remote' || workPreference === 'any')) {
+      locationScore = 0.9;
+      matchReasons.push('Remote listing available');
     }
 
-    // --- 3. EXPERIENCE SOFT SIGNAL (Weight: 10%) ---
-    let experienceScore = 0.5;
+    // --- ACCESSIBILITY SCORE (Weight: 15%) ---
+    const accessibilityScore = accessEval.score;
+    if (disabilities.length > 0 || accessibilityNeeds.length > 0) {
+      matchReasons.push(`Accessibility: ${accessEval.assessment}`);
+    }
+
+    // --- EXPERIENCE SCORE (Weight: 10%) ---
+    let experienceScore = 0.6;
     const isSeniorTitle = /\b(senior|sr|lead|principal|architect|staff|head|vp|director)\b/i.test(titleLower);
     const isJuniorTitle = /\b(junior|jr|intern|trainee|entry|associate)\b/i.test(titleLower);
 
     if (hasJuniorProfile && isSeniorTitle) {
-      experienceScore = 0.1; // soft penalty for senior jobs on junior profile
+      experienceScore = 0.2;
       matchReasons.push('Soft filter: Senior role for junior profile');
     } else if (hasSeniorProfile && isSeniorTitle) {
       experienceScore = 1.0;
@@ -126,28 +147,22 @@ export function scoreAndFilterJobs(jobs: RawJob[], query: JobSearchQuery): Score
     } else if (hasJuniorProfile && isJuniorTitle) {
       experienceScore = 1.0;
       matchReasons.push('Junior/Entry role matched experience');
-    } else {
-      experienceScore = 0.6;
     }
 
-    // --- WEIGHTED COMPOSITE SCORE ---
-    const rawTotalScore = skillScore * 0.60 + locationScore * 0.30 + experienceScore * 0.10;
+    const rawTotalScore = skillScore * 0.50 + locationScore * 0.25 + accessibilityScore * 0.15 + experienceScore * 0.10;
     const finalScore = Math.round(rawTotalScore * 100) / 100;
-
-    // Filter out jobs with extremely low skill relevance if skills were explicitly provided
-    if (cleanSkills.length > 0 && matchedSkills.length === 0) {
-      continue; // Skip job if zero requested skills matched
-    }
 
     scoredJobs.push({
       ...job,
+      title: cleanTitle,
+      description: cleanDesc,
       score: finalScore,
-      matchReasons: matchReasons.length > 0 ? matchReasons : ['General relevance'],
+      accessibilityScore: accessEval.score,
+      accessibilityStatus: accessEval.status,
+      matchReasons,
     });
   }
 
-  // Sort descending by score
   scoredJobs.sort((a, b) => b.score - a.score);
-
   return scoredJobs;
 }

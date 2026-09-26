@@ -1,110 +1,65 @@
 # Job Aggregator & Matching Backend Service
 
-A lightweight, high-performance Node.js + TypeScript Express web service ready for deployment on **Render**, featuring automated job fetching from multiple platform feeds (**WeWorkRemotely**, **RemoteOK**, **Arbeitnow**, **Remotive**, **Jobspresso**), keyword scoring, location matching (remote, on-site, hybrid), and a built-in test client.
+A lightweight, high-performance Node.js + TypeScript Express web service ready for deployment on **Render**, featuring automated job fetching from 6 platform feeds (**WeWorkRemotely**, **RemoteOK**, **Arbeitnow**, **Remotive**, **Jobspresso**, **MicroGigs**), Disability RAG Taxonomy Matching, resume parsing, social link integration, 24h cache scheduling, full description popups, and AI application drafting.
 
 ---
 
-## 🌐 Active Platform Handlers
+## ♿ RAG Disability & Skill Taxonomy System
 
-| Platform | Type | Feed/API URL | Location Type |
-|---|---|---|---|
-| **WeWorkRemotely** | RSS / API | `https://weworkremotely.com/remote-jobs.rss` | Remote |
-| **RemoteOK** | JSON API | `https://remoteok.com/api` | Remote |
-| **Arbeitnow** | JSON API | `https://www.arbeitnow.com/api/job-board-api` | On-site, Hybrid & Remote |
-| **Remotive** | JSON API | `https://remotive.com/api/remote-jobs` | Remote & Location-Restricted |
-| **Jobspresso** | RSS / API | `https://jobspresso.co/feed/` | Remote |
+Built a structured RAG Knowledge Base ([`src/services/taxonomyManager.ts`](file:///d:/Personal_practice/sort/cap-able/src/services/taxonomyManager.ts)) containing categorized disability profiles, synonyms, assistive tech needs, and incompatible job demands.
+
+### Disability Taxonomy Groups
+- **Visual Impairment & Blindness (`visual`)**:
+  - *Incompatible Demands*: Robotics hardware assembly, circuit soldering, visual UI/graphic design, driving, warehouse labor.
+  - *Compatible Demands*: Screen reader compatible software, backend development, python, data science.
+- **Mobility & Physical Impairment (`mobility`)**:
+  - *Incompatible Demands*: Heavy lifting, standing long hours, climbing, warehouse, cleaning.
+  - *Compatible Demands*: 100% Remote, digital software, desk jobs, wheelchair accessible offices.
+- **Auditory Impairment & Deafness (`auditory`)**:
+  - *Incompatible Demands*: Phone sales, inbound call centers, live phone support.
+  - *Compatible Demands*: Text chat support, software engineering, async written communication.
+- **Speech Impairment (`speech`)**:
+  - *Incompatible Demands*: Phone sales, public speaking, radio.
+  - *Compatible Demands*: Coding, async communication, data entry.
 
 ---
 
 ## 🌐 Endpoints Reference
 
-### 1. `POST /api/search-jobs`
-Main aggregation, scoring, and matching endpoint.
+### 1. `GET /api/taxonomy`
+Returns the full Disability Taxonomy Catalog and Skill Taxonomy Catalog for RAG indexing & frontend filtering.
 
-- **Headers**: `Content-Type: application/json`
+### 2. `POST /api/taxonomy/compare`
+RAG Semantic Comparison Endpoint. Compares candidate disabilities against job demands.
+
 - **Request Body**:
 ```json
 {
-  "skills": ["embedded systems", "python", "arduino"],
-  "experience": [
-    { "title": "Embedded Systems Engineer", "years": 2 }
-  ],
-  "locations": ["Berlin", "Remote"],
-  "workPreference": "any"
+  "disabilities": ["blind"],
+  "jobTitle": "Robotics Engineer",
+  "jobDescription": "Physical assembly and circuit soldering in robotics lab."
 }
 ```
 
-- **Success Response (200 OK)**:
+- **Response (`200 OK`)**:
 ```json
 {
-  "count": 12,
-  "totalFetched": 480,
-  "jobs": [
-    {
-      "title": "Embedded Software Developer",
-      "company": "Tech Corp",
-      "location": "Berlin, Germany",
-      "remote": false,
-      "url": "https://...",
-      "description": "...",
-      "source": "arbeitnow",
-      "publishedAt": "2026-09-20T10:00:00Z",
-      "score": 0.85,
-      "matchReasons": [
-        "Skills matched: python, embedded systems",
-        "Location matched"
-      ]
-    }
-  ]
+  "hasConflict": true,
+  "scorePenalty": 0.8,
+  "status": "physical_conflict",
+  "reason": "Physical Conflict: Candidate with visual impairment (blindness) cannot perform physical Robotics hardware assembly, circuit inspection, or visual design tasks for \"Robotics Engineer\"."
 }
 ```
 
----
-
-### 2. `GET /api/health`
-Health check route used by Render or monitoring tools.
-
-- **Success Response (200 OK)**:
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-09-26T19:10:36.203Z",
-  "handlers": ["weworkremotely", "remoteok", "arbeitnow", "remotive", "jobspresso"]
-}
-```
-
----
-
-### 3. `GET /`
-Serves the interactive Test Bench Web UI ([`public/index.html`](file:///d:/Personal_practice/sort/cap-able/public/index.html)).
+### 3. `POST /api/search-jobs`
+Single candidate job search endpoint with disability RAG evaluation & 24h cache policy.
 
 ---
 
 ## 🏃 Local Development
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Run Dev Mode (Hot Reloading)**
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
-
-3. **Build & Start Production**
-   ```bash
-   npm run build
-   npm start
-   ```
-
----
-
-## ☁️ Render Deployment Guide
-
-1. Push your repository to GitHub.
-2. Go to [Render Dashboard](https://dashboard.render.com) → **New +** → **Web Service**.
-3. Set **Build Command**: `npm install && npm run build`
-4. Set **Start Command**: `npm start`
-5. Render automatically sets `PORT`, which the Express server binds to automatically.
+```bash
+npm run dev     # Run dev server with hot reload at http://localhost:3000
+npm run build   # Build TypeScript project to dist/
+npm start       # Start compiled server
+```

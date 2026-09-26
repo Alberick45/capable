@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { RawJob } from '../types.js';
+import { cleanHtmlAndEntities } from '../utils/textCleaner.js';
 
 interface ArbeitnowJobItem {
   slug: string;
@@ -30,7 +31,7 @@ export async function fetchArbeitnow(): Promise<RawJob[]> {
     });
 
     if (!response.data || !Array.isArray(response.data.data)) {
-      console.warn('[Arbeitnow Handler Warning]: Response data is missing or invalid array');
+      console.warn('[Arbeitnow Handler Warning]: Response data missing or invalid array');
       return [];
     }
 
@@ -41,18 +42,17 @@ export async function fetchArbeitnow(): Promise<RawJob[]> {
         continue;
       }
 
-      const tags = Array.isArray(item.tags) ? item.tags.join(', ') : '';
-      const rawDesc = item.description || '';
-      const cleanDesc = rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      const fullDesc = tags ? `Tags: ${tags}\n${cleanDesc}` : cleanDesc;
+      const cleanTitle = cleanHtmlAndEntities(item.title);
+      const cleanDesc = cleanHtmlAndEntities(item.description || '');
 
       jobs.push({
-        title: item.title,
-        company: item.company_name,
+        title: cleanTitle,
+        company: cleanHtmlAndEntities(item.company_name),
         location: item.location || (item.remote ? 'Remote' : 'On-site'),
         remote: Boolean(item.remote),
         url: item.url,
-        description: fullDesc,
+        description: cleanDesc,
+        tags: Array.isArray(item.tags) ? item.tags : [],
         source: 'arbeitnow',
         publishedAt: item.created_at ? new Date(item.created_at * 1000).toISOString() : undefined,
       });

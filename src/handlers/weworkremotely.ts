@@ -1,11 +1,12 @@
 import Parser from 'rss-parser';
 import { RawJob } from '../types.js';
+import { cleanHtmlAndEntities } from '../utils/textCleaner.js';
 
 const parser = new Parser();
 
 export async function fetchWeWorkRemotely(): Promise<RawJob[]> {
   const feedUrl = 'https://weworkremotely.com/remote-jobs.rss';
-  
+
   try {
     const feed = await parser.parseURL(feedUrl);
     const jobs: RawJob[] = [];
@@ -15,20 +16,18 @@ export async function fetchWeWorkRemotely(): Promise<RawJob[]> {
       let company = 'WeWorkRemotely Listed';
       let title = rawTitle;
 
-      // WeWorkRemotely titles often follow "Company Name: Job Title"
       if (rawTitle.includes(':')) {
         const parts = rawTitle.split(':');
         company = parts[0].trim();
         title = parts.slice(1).join(':').trim();
       }
 
-      // Clean HTML tags from content if present
-      const rawDesc = item.content || item.contentSnippet || item.summary || '';
-      const cleanDesc = rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const cleanTitle = cleanHtmlAndEntities(title);
+      const cleanDesc = cleanHtmlAndEntities(item.content || item.contentSnippet || item.summary || '');
 
       jobs.push({
-        title,
-        company,
+        title: cleanTitle,
+        company: cleanHtmlAndEntities(company),
         location: 'Remote',
         remote: true,
         url: item.link || feedUrl,
