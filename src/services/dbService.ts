@@ -84,6 +84,7 @@ export async function saveJobsToDatabase(jobs: RawJob[]): Promise<{ id: string; 
     physical_requirements: job.physicalRequirements || [],
     source: job.source,
     published_at: job.publishedAt ? new Date(job.publishedAt).toISOString() : new Date().toISOString(),
+    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 day expiration window
   }));
 
   // Upsert jobs on URL conflict and return ID + URL
@@ -214,4 +215,33 @@ export async function matchJobsByVector(embedding: number[], threshold = 0.5, li
   }
 
   return data;
+}
+
+/**
+ * 7. Purge expired jobs (and cascading matches) older than the expiration threshold
+ */
+export async function purgeExpiredJobs(retentionDays = 30): Promise<number> {
+  try {
+    const nowIso = new Date().toISOString();
+    const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
+
+    const { error, count } = await supabase
+      .from('jobs')
+      .delete({ count: 'exact' })
+      .or(`expires_at.lt.${nowIso},created_at.lt.${cutoffDate}`);
+
+    if (error) {
+      console.error('[DB Error] Failed to purge expired jobs:', error.message);
+      return 0;
+    }
+
+    const purgedCount = count || 0;
+    if (purgedCount > 0) {
+      console.log(`🧹 [Supabase Purge] Deleted ${purgedCount} expired job listings older than ${retentionDays} days.`);
+    }
+    return purgedCount;
+  } catch (err: any) {
+    console.error('[DB Exception] purgeExpiredJobs failed:', err.message);
+    return 0;
+  }
 }

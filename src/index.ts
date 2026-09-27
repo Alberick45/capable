@@ -62,7 +62,7 @@ app.post('/api/taxonomy/compare', (req: Request, res: Response): void => {
   res.json(result);
 });
 
-import { getOrCreateUserByUsername, upsertCandidateProfile, saveJobsToDatabase, syncScoredMatchesToDatabase } from './services/dbService.js';
+import { getOrCreateUserByUsername, upsertCandidateProfile, saveJobsToDatabase, syncScoredMatchesToDatabase, purgeExpiredJobs } from './services/dbService.js';
 
 // 1. Candidate job search endpoint (Auto-persists jobs, candidate profile, and job matches to Supabase)
 app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> => {
@@ -87,6 +87,11 @@ app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> 
       console.warn('[Supabase Sync Warning] Could not sync search matches to database:', err.message)
     );
 
+    // Periodically clean up expired jobs from Supabase
+    purgeExpiredJobs(30).catch((err) =>
+      console.warn('[Supabase Purge Warning] Could not purge expired jobs:', err.message)
+    );
+
     res.json({
       count: finalJobs.length,
       totalFetched: rawJobs.length,
@@ -98,6 +103,20 @@ app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     console.error('[JobSearch Error]:', error);
     res.status(500).json({ error: 'An unexpected error occurred while searching for jobs.' });
+  }
+});
+
+// Explicit Job Cleanup Endpoint (Purges listings older than retention period)
+app.post('/api/jobs/cleanup', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { retentionDays = 30 } = req.body as { retentionDays?: number };
+    const deletedCount = await purgeExpiredJobs(retentionDays);
+    res.json({
+      message: `Successfully purged expired jobs older than ${retentionDays} days`,
+      deletedCount,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to cleanup expired jobs.' });
   }
 });
 
