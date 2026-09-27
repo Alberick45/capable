@@ -62,9 +62,9 @@ app.post('/api/taxonomy/compare', (req: Request, res: Response): void => {
   res.json(result);
 });
 
-import { getOrCreateUserByUsername, upsertCandidateProfile, saveJobsToDatabase } from './services/dbService.js';
+import { getOrCreateUserByUsername, upsertCandidateProfile, saveJobsToDatabase, syncScoredMatchesToDatabase } from './services/dbService.js';
 
-// 1. Candidate job search endpoint (Auto-persists jobs & candidate to Supabase)
+// 1. Candidate job search endpoint (Auto-persists jobs, candidate profile, and job matches to Supabase)
 app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> => {
   try {
     const query = req.body as JobSearchQuery & { forceRefresh?: boolean; username?: string };
@@ -81,18 +81,11 @@ app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> 
     const scoredJobs = scoreAndFilterJobs(rawJobs, query);
     const finalJobs = scoredJobs.slice(0, query.limit || 20);
 
-    // Asynchronously persist fetched raw jobs into Supabase
-    saveJobsToDatabase(rawJobs).catch((err) =>
-      console.warn('[Supabase Persist Warning] Could not save jobs to database:', err.message)
+    // Asynchronously persist candidate profile, raw jobs, AND scored matches into Supabase
+    const targetUsername = username || query.userId || 'demo_candidate';
+    syncScoredMatchesToDatabase(targetUsername, query, finalJobs, rawJobs).catch((err) =>
+      console.warn('[Supabase Sync Warning] Could not sync search matches to database:', err.message)
     );
-
-    // If a username or userId is provided, persist candidate profile to Supabase
-    const targetUsername = username || query.userId;
-    if (targetUsername) {
-      getOrCreateUserByUsername(targetUsername)
-        .then((user) => upsertCandidateProfile(user.id, query))
-        .catch((err) => console.warn('[Supabase Persist Warning] Could not save profile:', err.message));
-    }
 
     res.json({
       count: finalJobs.length,
