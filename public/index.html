@@ -440,13 +440,18 @@
 
           <div class="row-2">
             <div class="form-group">
+              <label for="username" style="color:#a5b4fc">👤 Username (Supabase Account)</label>
+              <input type="text" id="username" value="alex_techie" placeholder="e.g. alex_techie" required />
+            </div>
+            <div class="form-group">
               <label for="candidateName">Candidate Name</label>
               <input type="text" id="candidateName" value="Alex Techie" placeholder="Your Name" />
             </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" value="alex@example.com" placeholder="Email" />
-            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" value="alex@example.com" placeholder="Email" />
           </div>
 
           <div class="form-group">
@@ -665,6 +670,7 @@
     searchForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const username = document.getElementById('username').value.trim();
       const skills = document.getElementById('skills').value.split(',').map(s => s.trim()).filter(Boolean);
       const locations = document.getElementById('locations').value.split(',').map(l => l.trim()).filter(Boolean);
       const disabilities = document.getElementById('disabilities').value.split(',').map(d => d.trim()).filter(Boolean);
@@ -684,7 +690,7 @@
         if (title) experience.push({ title, years });
       });
 
-      const payload = { name, email, skills, experience, locations, workPreference, disabilities, github, linkedin, portfolio, bio };
+      const payload = { username, name, email, skills, experience, locations, workPreference, disabilities, github, linkedin, portfolio, bio };
 
       submitBtn.disabled = true;
       submitBtn.innerHTML = '<span class="spinner"></span> Querying Platforms...';
@@ -713,15 +719,15 @@
     });
 
     function renderJobs(data) {
-      const { count, totalFetched, fromCache, cacheAgeSeconds, jobs } = data;
+      const { count, totalFetched, fromCache, cacheAgeSeconds, supabaseSynced, jobs } = data;
       resultsCount.innerHTML = `Found <strong>${count}</strong> matches (from ${totalFetched} raw listings across 6 platforms)`;
 
       if (fromCache) {
         cacheBadge.className = 'cache-status cached';
-        cacheBadge.textContent = `⚡ Served from Cache (${cacheAgeSeconds}s old)`;
+        cacheBadge.innerHTML = `⚡ Served from Cache (${cacheAgeSeconds}s old)${supabaseSynced ? ' &bull; ☁️ Synced to Supabase' : ''}`;
       } else {
         cacheBadge.className = 'cache-status fresh';
-        cacheBadge.textContent = `🌐 Fresh Platform Fetch`;
+        cacheBadge.innerHTML = `🌐 Fresh Platform Fetch${supabaseSynced ? ' &bull; ☁️ Synced to Supabase' : ''}`;
       }
 
       if (!jobs || jobs.length === 0) {

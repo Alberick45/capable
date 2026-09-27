@@ -62,11 +62,13 @@ app.post('/api/taxonomy/compare', (req: Request, res: Response): void => {
   res.json(result);
 });
 
-// 1. Candidate job search endpoint
+import { getOrCreateUserByUsername, upsertCandidateProfile, saveJobsToDatabase } from './services/dbService.js';
+
+// 1. Candidate job search endpoint (Auto-persists jobs & candidate to Supabase)
 app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> => {
   try {
-    const query = req.body as JobSearchQuery & { forceRefresh?: boolean };
-    const { skills = [], locations = [], forceRefresh = false } = query;
+    const query = req.body as JobSearchQuery & { forceRefresh?: boolean; username?: string };
+    const { skills = [], locations = [], forceRefresh = false, username } = query;
 
     if (!Array.isArray(skills) || !Array.isArray(locations)) {
       res.status(400).json({
@@ -79,16 +81,49 @@ app.post('/api/search-jobs', async (req: Request, res: Response): Promise<void> 
     const scoredJobs = scoreAndFilterJobs(rawJobs, query);
     const finalJobs = scoredJobs.slice(0, query.limit || 20);
 
+    // Asynchronously persist fetched raw jobs into Supabase
+    saveJobsToDatabase(rawJobs).catch((err) =>
+      console.warn('[Supabase Persist Warning] Could not save jobs to database:', err.message)
+    );
+
+    // If a username or userId is provided, persist candidate profile to Supabase
+    const targetUsername = username || query.userId;
+    if (targetUsername) {
+      getOrCreateUserByUsername(targetUsername)
+        .then((user) => upsertCandidateProfile(user.id, query))
+        .catch((err) => console.warn('[Supabase Persist Warning] Could not save profile:', err.message));
+    }
+
     res.json({
       count: finalJobs.length,
       totalFetched: rawJobs.length,
       fromCache,
       cacheAgeSeconds,
+      supabaseSynced: true,
       jobs: finalJobs,
     });
   } catch (error) {
     console.error('[JobSearch Error]:', error);
     res.status(500).json({ error: 'An unexpected error occurred while searching for jobs.' });
+  }
+});
+
+// Explicit Supabase User Profile Endpoints
+app.post('/api/user/save-profile', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username, ...profileData } = req.body as CandidateProfile & { username: string };
+    if (!username) {
+      res.status(400).json({ error: 'Username is required to save profile.' });
+      return;
+    }
+
+    const user = await getOrCreateUserByUsername(username);
+    const profile = await upsertCandidateProfile(user.id, profileData);
+
+    res.json({ message: 'Profile saved to Supabase successfully', user, profile });
+  } catch (error: any) {
+    console.error('[Supabase Save Profile Error]:', error);
+    res.status(500).json({ error: error.message || 'Failed to save profile to Supabase.' });
   }
 });
 
